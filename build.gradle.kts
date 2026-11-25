@@ -1,21 +1,15 @@
 plugins {
-    kotlin("jvm") version "2.2.20"
+    kotlin("jvm") version "2.1.0"
+    application
 }
 
-group = "org.example"
-version = "1.0-SNAPSHOT"
-
-repositories {
-    mavenCentral()
-}
+repositories { mavenCentral() }
 
 dependencies {
-    testImplementation(kotlin("test"))
+    implementation("io.dapr:dapr-sdk:1.19.0")
+    implementation("org.slf4j:slf4j-simple:2.0.16") // silences SLF4J warnings, optional
 }
 
-tasks.test {
-    useJUnitPlatform()
-}
-kotlin {
-    jvmToolchain(21)
-}
+kotlin { jvmToolchain(21) }
+
+application { mainClass.set("MainKt") }
