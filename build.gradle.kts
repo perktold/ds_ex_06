@@ -1,21 +1,11 @@
 plugins {
-    kotlin("jvm") version "2.2.20"
+    kotlin("jvm") version "1.9.24"
+    application
 }
-
-group = "org.example"
-version = "1.0-SNAPSHOT"
-
-repositories {
-    mavenCentral()
-}
-
+repositories { mavenCentral() }
 dependencies {
-    testImplementation(kotlin("test"))
+    implementation("io.dapr:dapr-sdk:1.14.0")
+    implementation("com.fasterxml.jackson.module:jackson-module-kotlin:2.17.1")
+    implementation("org.slf4j:slf4j-simple:2.0.13")
 }
-
-tasks.test {
-    useJUnitPlatform()
-}
-kotlin {
-    jvmToolchain(21)
-}
+application { mainClass.set("MainKt") }

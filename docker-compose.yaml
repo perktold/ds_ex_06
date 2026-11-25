@@ -1,0 +1,148 @@
+
+services:
+
+  # Redis für Pub/Sub und State Store
+  redis:
+    image: redis:7-alpine
+    container_name: redis
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  # Gemeinsames Image für alle Kotlin-Anwendungen
+  manager:
+    build: .
+    environment:
+      ROLE: manager
+      APP_PORT: 8080
+      DAPR_GRPC_ENDPOINT: http://daprd-manager:50001
+    depends_on:
+      daprd-manager:
+        condition: service_started
+
+  client1:
+    build: .
+    environment:
+      ROLE: client
+      APP_PORT: 8081
+      CLIENT_ID: 1
+      DAPR_GRPC_ENDPOINT: http://daprd-client1:50001
+    depends_on:
+      daprd-client1:
+        condition: service_started
+
+  client2:
+    build: .
+    environment:
+      ROLE: client
+      APP_PORT: 8082
+      CLIENT_ID: 2
+      DAPR_GRPC_ENDPOINT: http://daprd-client2:50001
+    depends_on:
+      daprd-client2:
+        condition: service_started
+
+  client3:
+    build: .
+    environment:
+      ROLE: client
+      APP_PORT: 8083
+      CLIENT_ID: 3
+      DAPR_GRPC_ENDPOINT: http://daprd-client3:50001
+    depends_on:
+      daprd-client3:
+        condition: service_started
+
+  # Dapr-Sidecar für den Manager
+  daprd-manager:
+    image: daprio/daprd:1.14.4
+    command:
+      - ./daprd
+      - --app-id
+      - manager
+      - --app-port
+      - "8080"
+      - --app-channel-address
+      - manager
+      - --app-protocol
+      - http
+      - --dapr-grpc-port
+      - "50001"
+      - --resources-path
+      - /components
+    volumes:
+      - ./components:/components:ro
+    depends_on:
+      redis:
+        condition: service_healthy
+
+  # Dapr-Sidecar für Client 1
+  daprd-client1:
+    image: daprio/daprd:1.14.4
+    command:
+      - ./daprd
+      - --app-id
+      - client1
+      - --app-port
+      - "8081"
+      - --app-channel-address
+      - client1
+      - --app-protocol
+      - http
+      - --dapr-grpc-port
+      - "50001"
+      - --resources-path
+      - /components
+    volumes:
+      - ./components:/components:ro
+    depends_on:
+      redis:
+        condition: service_healthy
+
+  # Dapr-Sidecar für Client 2
+  daprd-client2:
+    image: daprio/daprd:1.14.4
+    command:
+      - ./daprd
+      - --app-id
+      - client2
+      - --app-port
+      - "8082"
+      - --app-channel-address
+      - client2
+      - --app-protocol
+      - http
+      - --dapr-grpc-port
+      - "50001"
+      - --resources-path
+      - /components
+    volumes:
+      - ./components:/components:ro
+    depends_on:
+      redis:
+        condition: service_healthy
+
+  # Dapr-Sidecar für Client 3
+  daprd-client3:
+    image: daprio/daprd:1.14.4
+    command:
+      - ./daprd
+      - --app-id
+      - client3
+      - --app-port
+      - "8083"
+      - --app-channel-address
+      - client3
+      - --app-protocol
+      - http
+      - --dapr-grpc-port
+      - "50001"
+      - --resources-path
+      - /components
+    volumes:
+      - ./components:/components:ro
+    depends_on:
+      redis:
+        condition: service_healthy
